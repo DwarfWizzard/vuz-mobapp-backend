@@ -5,6 +5,6 @@ type Apikey struct {
 }
 
 type TokenPair struct {
-	Token   string
-	Refresh string
+	Token   string `json:"token"`
+	Refresh string `json:"refresh_token"`
 }

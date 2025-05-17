@@ -74,6 +74,7 @@ func main() {
 	router.Server.BaseContext = func(l net.Listener) context.Context { return ctx }
 
 	router.POST("/auth/login", userHandler.Login)
+	router.POST("/auth/refresh", userHandler.Refresh)
 
 	apiGroup := router.Group("/v1")
 

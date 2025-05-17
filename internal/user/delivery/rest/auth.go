@@ -16,11 +16,6 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-type LoginResponse struct {
-	AccessToken  string `json:"token"`
-	RefreshToken string `json:"refresh_token"`
-}
-
 // Login - POST /auth
 func (h *UserHandler) Login(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -54,5 +49,31 @@ func (h *UserHandler) Login(c echo.Context) error {
 		h.logger.Error("Generate user token pair error", zap.Error(err))
 	}
 
-	return response.Success(c, &LoginResponse{AccessToken: tokenPair.Token, RefreshToken: tokenPair.Refresh})
+	return response.Success(c, tokenPair)
+}
+
+type RefreshRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+// Refresh - POST /auth/refresh
+func (h *UserHandler) Refresh(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	mimeType := c.Request().Header.Get(echo.HeaderContentType)
+	if !strings.HasPrefix(mimeType, echo.MIMEApplicationJSON) {
+		return response.ErrMimeTypeError
+	}
+
+	var rq RefreshRequest
+	if err := c.Bind(&rq); err != nil {
+		return response.ErrFormatError
+	}
+
+	tokenPair, err := h.authService.RefreshToken(ctx, rq.RefreshToken)
+	if err != nil {
+		h.logger.Error("Generate user token pair error", zap.Error(err))
+	}
+
+	return response.Success(c, tokenPair)
 }

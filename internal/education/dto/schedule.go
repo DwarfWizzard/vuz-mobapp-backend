@@ -14,13 +14,13 @@ type Schedule struct {
 	GroupNumber string `json:"group_number"`
 
 	SubjectID   *uint32 `json:"subject_id"`
-	SubjectName string `json:"subject_name"`
+	SubjectName string  `json:"subject_name"`
 
 	TeacherID   *uint32 `json:"teacher_id"`
-	TeacherName string `json:"teacher_name"`
+	TeacherName string  `json:"teacher_name"`
 
 	LocationID *uint32 `json:"location_id"`
-	Address    string `json:"address"`
+	Address    string  `json:"address"`
 
 	Note *string `json:"note,omitempty"`
 }

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/infrastructure/auth"
-	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/usecase"
 	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/model"
+	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/usecase"
 
 	"go.uber.org/zap"
 )

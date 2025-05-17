@@ -17,6 +17,7 @@ type UserRepo interface {
 type TokenProvider interface {
 	GetApikeyByToken(ctx context.Context, tokenValue string) (*Apikey, error)
 	GenerateUserTokenPair(ctx context.Context, user *model.User) (*TokenPair, error)
+	RefreshToken(ctx context.Context, refreshToken string) (*TokenPair, error)
 }
 
 type jwtTokenProvider struct {
@@ -71,6 +72,40 @@ func (tp *jwtTokenProvider) GetApikeyByToken(ctx context.Context, tokenValue str
 	}
 
 	return apikey, nil
+}
+
+func (tp *jwtTokenProvider) RefreshToken(ctx context.Context, refreshToken string) (*TokenPair, error) {
+	token, err := jwt.ParseWithClaims(refreshToken, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+		// Проверка метода подписи
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errSigningMethod
+		}
+		return []byte(tp.secret), nil
+	})
+	if err != nil {
+		// Обработка ошибок просроченного токена и других проблем
+		vErr, _ := err.(*jwt.ValidationError)
+		if vErr != nil && vErr.Errors&jwt.ValidationErrorExpired != 0 {
+			return nil, errTokenExpired
+		}
+		return nil, errInvalidToken
+	}
+
+	claims, ok := token.Claims.(*Claims)
+	if !ok || !token.Valid {
+		return nil, errInvalidToken
+	}
+
+	user, err := tp.repo.GetUserById(claims.UserId)
+	if err != nil {
+		if repository.ErrorIsNoRows(err) {
+			return nil, errInvalidToken
+		}
+		return nil, err
+	}
+
+	// Генерация новой пары токенов
+	return tp.GenerateUserTokenPair(ctx, user)
 }
 
 func (tp *jwtTokenProvider) GenerateUserTokenPair(ctx context.Context, user *model.User) (*TokenPair, error) {
