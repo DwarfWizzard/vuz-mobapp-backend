@@ -131,7 +131,7 @@ func (tp *jwtTokenProvider) GenerateUserTokenPair(ctx context.Context, user *mod
 		user.ID,
 	})
 
-	jwt.NewWithClaims(jwt.SigningMethodHS256, &Claims{
+	refresh := jwt.NewWithClaims(jwt.SigningMethodHS256, &Claims{
 		jwt.StandardClaims{
 			ExpiresAt: expiration.Add(5 * time.Minute).Unix(),
 			IssuedAt:  now.Unix(),
@@ -147,7 +147,7 @@ func (tp *jwtTokenProvider) GenerateUserTokenPair(ctx context.Context, user *mod
 		return nil, signErr
 	}
 
-	refreshToken, signErr := access.SignedString([]byte(tp.secret))
+	refreshToken, signErr := refresh.SignedString([]byte(tp.secret))
 	if signErr != nil {
 		return nil, signErr
 	}
