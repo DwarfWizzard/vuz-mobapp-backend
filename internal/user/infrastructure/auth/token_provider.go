@@ -59,6 +59,10 @@ func (tp *jwtTokenProvider) GetApikeyByToken(ctx context.Context, tokenValue str
 		return nil, errInvalidToken
 	}
 
+	if claims.Type != "access" {
+		return nil, errInvalidToken
+	}
+
 	user, err := tp.repo.GetUserById(claims.UserId)
 	if err != nil {
 		if repository.ErrorIsNoRows(err) {
