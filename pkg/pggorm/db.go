@@ -1,20 +1,26 @@
 package pggorm
 
 import (
-	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Db struct {
 	db *gorm.DB
 }
 
-func NewDB(connUrl string, logger *zap.Logger) (*Db, error) {
-	db, err := gorm.Open(postgres.Open(connUrl))
+func NewDB(connUrl string) (*Db, error) {
+	db, err := gorm.Open(postgres.Open(connUrl), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		return nil, err
 	}
+
+	db = db.Session(&gorm.Session{
+		PrepareStmt: false,
+	})
 
 	return &Db{db: db}, nil
 }

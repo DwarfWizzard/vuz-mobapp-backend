@@ -1,4 +1,4 @@
-package userdto
+package dto
 
 type UserGroupInfo struct {
 	GroupId     uint32

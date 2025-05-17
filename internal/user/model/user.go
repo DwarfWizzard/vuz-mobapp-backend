@@ -1,4 +1,4 @@
-package usercore
+package model
 
 import (
 	"crypto/sha512"
@@ -10,19 +10,20 @@ const (
 )
 
 type User struct {
-	ID           uint32 `gorm:"primaryKey;type:serial"`
-	Role         *Role  `gorm:"foreignKey:RoleId"`
-	RoleId       uint8
-	Name         string
+	ID           uint32 `gorm:"primaryKey;type:int;autoIncrement"`
+	RoleId       uint8  `gorm:"not null"`
+	Name         string `gorm:"not null"`
 	Email        string `gorm:"uniqueIndex"`
 	PasswordHash string `gorm:"uniqueIndex"`
-	DeviceToken  string
-	AvatarURL    string
+	DeviceToken  string `gorm:"not null"`
+	AvatarURL    string `gorm:"not null"`
+
+	Role *Role `gorm:"foreignKey:RoleId"`
 }
 
 type Role struct {
-	Id   uint8  `gorm:"column:id;primaryKey;type:smallserial"`
-	Name string `gorm:"uniqueIndex"`
+	ID   uint32 `gorm:"primaryKey;type:smallint;autoIncrement"`
+	Name string `gorm:"uniqueIndex;not null"`
 }
 
 func PasswordHash(pwd string) string {

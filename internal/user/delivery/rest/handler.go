@@ -5,14 +5,14 @@ import (
 
 	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/infrastructure/auth"
 	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/usecase"
-	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/usercore"
+	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/model"
 
 	"go.uber.org/zap"
 )
 
 type UserUseCase interface {
 	GetUserInfo(ctx context.Context, userId uint32) (*usecase.UserInfo, error)
-	AuthorizeUser(ctx context.Context, email, password string) (*usercore.User, error)
+	AuthorizeUser(ctx context.Context, email, password string) (*model.User, error)
 }
 
 type GroupUseCase interface {

@@ -6,8 +6,8 @@ import (
 	userdto "github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/dto"
 )
 
-func (us EducationUseCase) GetGroupByUserId(ctx context.Context, userId uint32) ([]userdto.UserGroupInfo, error) {
-	groups, err := us.repo.GetGroupsByUserId(userId)
+func (us EducationUseCase) ListGroupsByUserId(ctx context.Context, userId uint32) ([]userdto.UserGroupInfo, error) {
+	groups, err := us.repo.ListGroupsByUserId(userId)
 	if err != nil {
 		return nil, err
 	}

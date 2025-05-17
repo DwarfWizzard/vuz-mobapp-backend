@@ -33,6 +33,8 @@ func (h *UserHandler) AuthMiddleware() echo.MiddlewareFunc {
 					c.Error(response.ErrInvalidSigningMethod)
 				} else if auth.ErrorIsInvalidToken(err) {
 					c.Error(response.ErrInvalidToken)
+				} else if auth.ErrorIsTokenExpired(err) {
+					c.Error(response.ErrTokenExpired)
 				} else {
 					c.Error(response.ErrInternalServerError)
 				}

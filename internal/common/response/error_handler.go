@@ -33,7 +33,7 @@ func HttpErrorHandler(err error, c echo.Context) {
 		eErr = e
 	default:
 		eErr = &ApiError{
-			Code:    -1,
+			Code:    500,
 			Message: e.Error(),
 		}
 	}

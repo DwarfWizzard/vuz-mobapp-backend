@@ -3,15 +3,12 @@ package rest
 import (
 	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/common/response"
 	userdto "github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/dto"
+	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/infrastructure/auth"
 	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/infrastructure/repository"
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
-
-type UserInfoRequest struct {
-	UserId uint32 `query:"id"`
-}
 
 type UserInfoResponse struct {
 	Id     uint32                  `json:"id"`
@@ -19,16 +16,16 @@ type UserInfoResponse struct {
 	Groups []userdto.UserGroupInfo `json:"groups"`
 }
 
-// UserInfo - GET /v1/user/:id
+// UserInfo - GET /v1/user
 func (h *UserHandler) UserInfo(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	var rq UserInfoRequest
-	if err := c.Bind(&rq); err != nil {
-		return response.ErrFormatError
+	apikey, ok := c.Get("apikey").(*auth.Apikey)
+	if !ok {
+		return response.ErrNotAuthorized
 	}
 
-	userInfo, err := h.uc.GetUserInfo(ctx, rq.UserId)
+	userInfo, err := h.uc.GetUserInfo(ctx, apikey.UserId)
 	if err != nil {
 		h.logger.Error("Get user info error", zap.Error(err))
 		if repository.ErrorIsNoRows(err) {

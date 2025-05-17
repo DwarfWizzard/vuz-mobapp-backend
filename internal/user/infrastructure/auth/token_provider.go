@@ -5,17 +5,18 @@ import (
 	"time"
 
 	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/infrastructure/repository"
-	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/usercore"
+	"github.com/DwarfWizzard/vuz-mobapp-backend/internal/user/model"
+
 	"github.com/golang-jwt/jwt"
 )
 
 type UserRepo interface {
-	GetUserById(userId uint32) (*usercore.User, error)
+	GetUserById(userId uint32) (*model.User, error)
 }
 
 type TokenProvider interface {
 	GetApikeyByToken(ctx context.Context, tokenValue string) (*Apikey, error)
-	GenerateUserTokenPair(ctx context.Context, user *usercore.User) (*TokenPair, error)
+	GenerateUserTokenPair(ctx context.Context, user *model.User) (*TokenPair, error)
 }
 
 type jwtTokenProvider struct {
@@ -43,12 +44,16 @@ func (tp *jwtTokenProvider) GetApikeyByToken(ctx context.Context, tokenValue str
 	})
 
 	if err != nil {
-		vErr, _ := err.(jwt.ValidationError)
+		vErr, _ := err.(*jwt.ValidationError)
+		if vErr.Errors&jwt.ValidationErrorExpired != 0 {
+			return nil, errTokenExpired
+		}
+
 		return nil, vErr.Inner
 	}
 
 	claims, ok := token.Claims.(*Claims)
-	if !ok {
+	if !ok || !token.Valid {
 		return nil, errInvalidToken
 	}
 
@@ -68,7 +73,7 @@ func (tp *jwtTokenProvider) GetApikeyByToken(ctx context.Context, tokenValue str
 	return apikey, nil
 }
 
-func (tp *jwtTokenProvider) GenerateUserTokenPair(ctx context.Context, user *usercore.User) (*TokenPair, error) {
+func (tp *jwtTokenProvider) GenerateUserTokenPair(ctx context.Context, user *model.User) (*TokenPair, error) {
 	now := time.Now().UTC()
 	expiration := now.Add(tp.ttl)
 
