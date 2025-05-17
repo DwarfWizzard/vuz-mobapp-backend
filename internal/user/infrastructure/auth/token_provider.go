@@ -32,6 +32,7 @@ func NewJWTProvider(secret string, repo UserRepo, ttl time.Duration) TokenProvid
 
 type Claims struct {
 	jwt.StandardClaims
+	Type   string
 	UserId uint32
 }
 
@@ -74,6 +75,7 @@ func (tp *jwtTokenProvider) GetApikeyByToken(ctx context.Context, tokenValue str
 	return apikey, nil
 }
 
+// TODO: add different token secrets
 func (tp *jwtTokenProvider) RefreshToken(ctx context.Context, refreshToken string) (*TokenPair, error) {
 	token, err := jwt.ParseWithClaims(refreshToken, &Claims{}, func(t *jwt.Token) (interface{}, error) {
 		// Проверка метода подписи
@@ -93,6 +95,10 @@ func (tp *jwtTokenProvider) RefreshToken(ctx context.Context, refreshToken strin
 
 	claims, ok := token.Claims.(*Claims)
 	if !ok || !token.Valid {
+		return nil, errInvalidToken
+	}
+
+	if claims.Type != "refresh" {
 		return nil, errInvalidToken
 	}
 
@@ -117,14 +123,16 @@ func (tp *jwtTokenProvider) GenerateUserTokenPair(ctx context.Context, user *mod
 			ExpiresAt: expiration.Unix(),
 			IssuedAt:  now.Unix(),
 		},
+		"access",
 		user.ID,
 	})
 
 	jwt.NewWithClaims(jwt.SigningMethodHS256, &Claims{
 		jwt.StandardClaims{
-			ExpiresAt: expiration.Unix(),
+			ExpiresAt: expiration.Add(5 * time.Minute).Unix(),
 			IssuedAt:  now.Unix(),
 		},
+		"refresh",
 		user.ID,
 	})
 
